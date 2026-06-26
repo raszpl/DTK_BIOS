@@ -1,7 +1,7 @@
 # DTK_BIOS
 DTK BIOS reverse engineering.
 
-https://en.wikipedia.org/wiki/DTK_Computer#Foundation_and_expansion_(1981%E2%80%931989) 
+[wikipedia](https://en.wikipedia.org/wiki/DTK_Computer#Foundation_and_expansion_(1981%E2%80%931989)) : 
 "Unusual for a company of its stature, Datatech also developed its own BIOS for its IBM PC compatibles. Its first PC BIOS clone was developed in 1985; while second source of such BIOSes had already been developed by companies such as Phoenix Technologies in the United States, Datatech feared that they would be sued out of existence by IBM and so developed its own clean-room implementations in 1985. Although Datatech's fears were later assuaged, quality-assurance supervisor David Wang felt that the continued development of in-house BIOSes afforded the company technical expertise that could be applied to other aspects of their R&D lab, as was the case for the company's ASIC division."
 
 In this repository I try to investigate and reverse engineer its idiosyncrasies.
