@@ -605,6 +605,8 @@ enum IVT_Vectors : unsigned __int16
   IVT_OVERFLOW = 0x4,
   IVT_PRINT_SCREEN = 0x5,
   IVT_TIMER = 0x8,
+  IVT_TIMER_off = 0x20,
+  IVT_TIMER_seg = 0x22,
   IVT_KEYBOARD = 0x9,
   IVT_FDC = 0xE,
   IVT_VIDEO = 0x10,
@@ -625,6 +627,7 @@ enum IVT_Vectors : unsigned __int16
   IVT_Video_Initialization_Table = 0x1D,
   IVT_Video_Initialization_Table_off = 0x74,
   IVT_Diskette_Parameter_Table = 0x1E,
+  IVT_Diskette_Parameter_Table_off = 0x78,
   IVT_VIDEO_CHARS_TABLE = 0x1F,
   IVT_HDD = 0x40,
   IVT_HDD_off = 0x100,
@@ -655,6 +658,7 @@ enum BDA_indexes : unsigned __int8
   BDA_12h_interrupt_flag = 0x12,
   BDA_13h_memory_size_kb = 0x13,
   BDA_15h_debug = 0x15,
+  BDA_16h_BIOS_control_flags = 0x16,
   BDA_17h_Keyboard_flags_1 = 0x17,
   BDA_18h_Keyboard_flags_2 = 0x18,
   BDA_19h_Alt_Numpad_work_area = 0x19,
@@ -1575,19 +1579,19 @@ enum __bitmask __bin __lzero BDA_7Bh_parallel_port4_timeout_vds : unsigned __int
 };
 
 /* 87 */
-enum __bitmask __bin __lzero BDA_93h_drive1_starting_state : unsigned __int8
+enum __bitmask __bin __lzero BDA_92h_drive0_starting_state : unsigned __int8
 {
-  BDA_93h_DRIVE_CHANGE_line_detection = 0b00000001,
-  BDA_93h_DRIVE_MULTIRATE = 0b00000010,
-  BDA_93h_DRIVE_DETERMINED = 0b00000100,
-  BDA_93h_DRIVE_RATE_MASK = 0xC0,       ///< MASK 11 1MBPS
-  BDA_93h_DRIVE_RATE_500KBPS = 0b00000000,
-  BDA_93h_DRIVE_RATE_300KBPS = 0b01000000,
-  BDA_93h_DRIVE_RATE_250KBPS = 0b10000000,
+  FLOPPY_Start_State_DRIVE_CHANGE_line_detection = 0b00000001,
+  FLOPPY_Start_State_DRIVE_MULTIRATE = 0b00000010,
+  FLOPPY_Start_State_DRIVE_DETERMINED = 0b00000100,
+  FLOPPY_Start_State_DRIVE_RATE_MASK = 0xC0, ///< MASK 11 1MBPS
+  FLOPPY_Start_State_DRIVE_RATE_500KBPS = 0b00000000,
+  FLOPPY_Start_State_DRIVE_RATE_300KBPS = 0b01000000,
+  FLOPPY_Start_State_DRIVE_RATE_250KBPS = 0b10000000,
 };
 
 /* 88 */
-typedef BDA_93h_drive1_starting_state BDA_92h_drive0_starting_state;
+typedef BDA_92h_drive0_starting_state BDA_93h_drive1_starting_state;
 
 /* 89 */
 enum __bitmask __bin __lzero BDA_96h_keyboard_flags_3 : unsigned __int8
@@ -2986,4 +2990,21 @@ enum int16_scancodes : unsigned __int16
 
 /* 189 */
 typedef IO_Port_1F6h_IDE_0_Drive_Head BDA_47h_Zenith_IDE_1F6h_Drive_Head;
+
+/* 190 */
+struct regs16
+{
+  unsigned __int8 dl;
+  unsigned __int8 dh;
+  unsigned __int16 bp;
+  unsigned __int16 di;
+  unsigned __int16 si;
+  unsigned __int16 ds;
+  unsigned __int8 cl;
+  unsigned __int8 ch;
+  unsigned __int16 bx;
+  unsigned __int8 al;
+  unsigned __int8 ah;
+  unsigned __int16 es;
+};
 
