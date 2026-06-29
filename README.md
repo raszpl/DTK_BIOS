@@ -41,10 +41,10 @@ I start with Symphony Labs SL82C460 based 386 [PEM-0036Y](https://theretroweb.co
 Quirks:
 - Monkey patching and stupid code. For example [sub_F53BE](https://github.com/raszpl/DTK_BIOS/blob/f81fe9854597db5af95cd36128b1cbe49b79fe43/PEM-0036Y_DTK.lst#L11537) jumping to retn of sub_F5376 instead of using its own one two bytes below at seg000:53DF.
 - Typos - randomly using 1 or 2 for Booleans.
-- Some clever but useless optimizations like reusing already loaded CMOS_0Bh_REGB_ALARM_INT_EN (20h) as IO_Port_PIC_Cmd_NON_SPECIFIC_EOI.
+- Some clever but useless optimizations like reusing already loaded CMOS_0Bh_REGB_ALARM_INT_EN (20h) as IO_Port_PIC_Cmd_NON_SPECIFIC_EOI (also 20h) saving 0 bytes because 'mov al, bl' (88 D8) = 'mov al, 20h' (B0 20).
 - Uses Ram Refresh (FSB dependent) for timing.
 - Authored by multiple developers using different coding styles, sometimes even in same function! For example loading BDA segment from eprom vs immediate. Loading AX vs loading AH and AL separately when calling Interrupt Services.
-- Setup: Every single Options is its own Function!
+- Setup: Every single Option is its own Function!
 - Setup: Clunky slow window growing and shrinking animations. Especially shrinking animation is infuriating because it takes ~1 second irregardless of CPU speed.
 - Setup: Little code reuse. Every window growing and shrinking animation size has its own dedicated Function instead of one animation routine and a table of sizes.
 - Setup: Esc dosnt exit sub menus, have to explicitly press enter on last item named Exit.
