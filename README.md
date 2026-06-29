@@ -8,14 +8,45 @@ In this repository I try to investigate and reverse engineer its idiosyncrasies.
 
 # BIOS
 Theretroweb has 34 examples of bespoke DTK bioses https://theretroweb.com/bios?page=1&itemsPerPage=40&biosManufacturerId=141.
-I start with Symphony Labs SL82C460 based 386 [PEM-0036Y](https://theretroweb.com/motherboards/s/dtk-pem-0036y) board [DTK 386 ROM BIOS Version 4.27 DDY103-01](https://www.vogons.org/viewtopic.php?p=1254644#p1254644)
+I start with Symphony Labs SL82C460 based 386 [PEM-0036Y](https://theretroweb.com/motherboards/s/dtk-pem-0036y) board [DTK 386 ROM BIOS Version 4.27 DDY103-01](https://www.vogons.org/viewtopic.php?p=1254644#p1254644):
+
+```
+                          ROM SETUP PROGRAM VERSION 3.0
+              (C) COPYRIGHT DATATECH ENTERPRISES CO., LTD 1990-1992.
+                               ALL RIGHTS RESERVED.
+    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+    ▌┌─────────────────────────────────────────────────────────────────────┐▐
+    ▌│                                                                     │▐
+    ▌│                     SET UP SYSTEM CONFIGURATION                     │▐
+    ▌│                                                                     │▐
+    ▌│    CURRENT DATE : [06-29-2026]         ┌──── HARD DISK INFO ────┐   │▐
+    ▌│    CURRENT TIME : [ 09:24:11 ]         │            --C-- --D-- │   │▐
+    ▌│    COPROCESSOR  : [   None   ]         │ TYPE     :     1    49 │   │▐
+    ▌│    BASE      MEMORY : [  640 KB]       │ CYL      :   306     0 │   │▐
+    ▌│    EXTENDED  MEMORY : [ 3072 KB]       │ HEAD     :     4     0 │   │▐
+    ▌│    DISKETTE DRIVE A : [  NO   ]        │ SEC/TRK  :    17     0 │   │▐
+    ▌│    DISKETTE DRIVE B : [  NO   ]        │ PRE-COMP :   128     0 │   │▐
+    ▌│    FIXED DISK TYPE C : [ NO ]          │ LAND-ZONE:   305     0 │   │▐
+    ▌│    FIXED DISK TYPE D : [ 47 ]          │ CAP.(MB) :    10     0 │   │▐
+    ▌│    PRIMARY DISPLAY CARD : [ CGA/80 ]   └────────────────────────┘   │▐
+    ▌│    BOOT SEQUENCE : [ A THEN C ]                                     │▐
+    ▌│    INITIAL NUM LOCK : [ OFF ]                                       │▐
+    ▌│    EXIT                                                             │▐
+    ▌│    --------------------------------------------------------------   │▐
+    ▌│                    ↑↓ :CHANGE ITEM   ◄─┘ :ACCEPT                    │▐
+    ▌└─────────────────────────────────────────────────────────────────────┘▐
+    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+```
 
 Quirks:
 - Monkey patching and stupid code. For example [sub_F53BE](https://github.com/raszpl/DTK_BIOS/blob/f81fe9854597db5af95cd36128b1cbe49b79fe43/PEM-0036Y_DTK.lst#L11537) jumping to retn of sub_F5376 instead of using its own one two bytes below at seg000:53DF.
-- Clever but useless optimizations.
+- Typos - randomly using 1 or 2 for Booleans.
+- Some clever but useless optimizations like reusing already loaded CMOS_0Bh_REGB_ALARM_INT_EN (20h) as IO_Port_PIC_Cmd_NON_SPECIFIC_EOI.
 - Uses Ram Refresh (FSB dependent) for timing.
-- Multiple developers using different coding styles, sometimes even in same function. For example loading BDA segment from eprom vs from immediate. Loading AX vs loading AH and AL separately when calling Interrupt Services.
+- Authored by multiple developers using different coding styles, sometimes even in same function! For example loading BDA segment from eprom vs immediate. Loading AX vs loading AH and AL separately when calling Interrupt Services.
+- Setup: Every single Options is its own Function!
 - Setup: Clunky slow window growing and shrinking animations. Especially shrinking animation is infuriating because it takes ~1 second irregardless of CPU speed.
+- Setup: Little code reuse. Every window growing and shrinking animation size has its own dedicated Function instead of one animation routine and a table of sizes.
 - Setup: Esc dosnt exit sub menus, have to explicitly press enter on last item named Exit.
 - Setup: No option to exit without saving.
 - Setup: Undesirable defensive programming. Prints [sub_F57D6](https://github.com/raszpl/DTK_BIOS/blob/f81fe9854597db5af95cd36128b1cbe49b79fe43/PEM-0036Y_DTK.lst#L12185) guarded against CGA Snow by default (waiting for H_Sync) without first detecting if we are even using CGA card to begin with. As a side effect rate limits print speed to one character per H retrace.
