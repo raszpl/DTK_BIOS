@@ -49,8 +49,8 @@ Quirks:
 - Setup: Little code reuse. Every window growing and shrinking animation size has its own dedicated Function instead of one animation routine and a table of sizes.
 - Setup: Esc dosnt exit sub menus, have to explicitly press enter on last item named Exit.
 - Setup: No option to exit without saving. Options are saved in CMOS the moment User changes them.
-- Setup: Clumsy defensive programming. Prints [sub_F57D6](https://github.com/raszpl/DTK_BIOS/blob/f81fe9854597db5af95cd36128b1cbe49b79fe43/PEM-0036Y_DTK.lst#L12185) guarded against CGA Snow by default (waiting for H_Sync) without first detecting if we are even using CGA card to begin with. As a side effect rate limits print speed to one character per H retrace. But some internal SETUP print functions are sufficiently protected from CGA Snow, some parts still use standard int10h.
-  - Counting up Ram during Boot produces CGA Snow, probably because standard int10h functions singular retrace wait is quite a way from store code.
+- Setup: Clumsy defensive programming. Prints [sub_F57D6](https://github.com/raszpl/DTK_BIOS/blob/f81fe9854597db5af95cd36128b1cbe49b79fe43/PEM-0036Y_DTK.lst#L12185) guarded against CGA Snow by default (waiting for H_Sync) without first detecting if we are even using CGA card to begin with. As a side effect rate limits print speed to one character per H retrace. But while some internal SETUP print functions are sufficiently protected from CGA Snow, other still use standard int10h.
+  - Counting up Ram during Boot produces CGA Snow, maybe because standard int10h functions singular retrace wait is quite a way from store code?
   - Setup/System Configuration: Menu navigation still produces CGA Snow when moving cursor because it uses int10h_9_Write_character_and_attribute_at_cursor.
   - Setup/System Configuration: Example of stupid code in
     <details><summary>Cursor highlighting at seg000:C01B set_Attribute_in_vram</summary>
