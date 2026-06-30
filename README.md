@@ -41,16 +41,41 @@ I start with Symphony Labs SL82C460 based 386 [PEM-0036Y](https://theretroweb.co
 Quirks:
 - Monkey patching and stupid code. For example [sub_F53BE](https://github.com/raszpl/DTK_BIOS/blob/f81fe9854597db5af95cd36128b1cbe49b79fe43/PEM-0036Y_DTK.lst#L11537) jumping to retn of sub_F5376 instead of using its own one two bytes below at seg000:53DF.
 - Typos - randomly using 1 or 2 for Booleans.
-- Some clever but useless optimizations like reusing already loaded CMOS_0Bh_REGB_ALARM_INT_EN (20h) as IO_Port_PIC_Cmd_NON_SPECIFIC_EOI (also 20h) saving 0 bytes because 'mov al, bl' (88 D8) = 'mov al, 20h' (B0 20).
+- Some clever looking but useless attempts at optimization like reusing already loaded CMOS_0Bh_REGB_ALARM_INT_EN (20h) as IO_Port_PIC_Cmd_NON_SPECIFIC_EOI (also 20h) saving 0 bytes because 'mov al, bl' (88 D8) = 'mov al, 20h' (B0 20).
 - Uses Ram Refresh (FSB dependent) for timing.
 - Authored by multiple developers using different coding styles, sometimes even in same function! For example loading BDA segment from eprom vs immediate. Loading AX vs loading AH and AL separately when calling Interrupt Services.
-- Setup: Every single Option is its own Function!
+- Setup: Every single Option is its own Function! Whole Setup looks constructed out of MACROS.
 - Setup: Clunky slow window growing and shrinking animations. Especially shrinking animation is infuriating because it takes ~1 second irregardless of CPU speed.
 - Setup: Little code reuse. Every window growing and shrinking animation size has its own dedicated Function instead of one animation routine and a table of sizes.
 - Setup: Esc dosnt exit sub menus, have to explicitly press enter on last item named Exit.
-- Setup: No option to exit without saving.
-- Setup: Undesirable defensive programming. Prints [sub_F57D6](https://github.com/raszpl/DTK_BIOS/blob/f81fe9854597db5af95cd36128b1cbe49b79fe43/PEM-0036Y_DTK.lst#L12185) guarded against CGA Snow by default (waiting for H_Sync) without first detecting if we are even using CGA card to begin with. As a side effect rate limits print speed to one character per H retrace.
-- Setup/System Configuration: Menu navigation produces CGA Snow like glitches when moving cursor on _every graphic adapter_ :o Its an actual bug in cursor routine sprinkling random Underscores.
+- Setup: No option to exit without saving. Options are saved in CMOS the moment User changes them.
+- Setup: Clumsy defensive programming. Prints [sub_F57D6](https://github.com/raszpl/DTK_BIOS/blob/f81fe9854597db5af95cd36128b1cbe49b79fe43/PEM-0036Y_DTK.lst#L12185) guarded against CGA Snow by default (waiting for H_Sync) without first detecting if we are even using CGA card to begin with. As a side effect rate limits print speed to one character per H retrace. But some internal SETUP print functions are sufficiently protected from CGA Snow, some parts still use standard int10h.
+  - Counting up Ram during Boot produces CGA Snow, probably because standard int10h functions singular retrace wait is quite a way from store code.
+  - Setup/System Configuration: Menu navigation still produces CGA Snow when moving cursor because it uses int10h_9_Write_character_and_attribute_at_cursor.
+  - Setup/System Configuration: Example of stupid code in
+    <details><summary>Cursor highlighting at seg000:C01B set_Attribute_in_vram</summary>
+    <pre>
+      mov     ax, di
+      mov     si, ax
+      mov     ah, bl
+    color_change_loop:
+      call    wait_H_Retrace_IRQ0_timer_int_Off
+      mov     al, es:[si]
+      mov     es:[di], ax
+      add     di, 2
+      add     si, 2
+      loop    color_change_loop
+    </pre>
+      Why all this useless reading? it should look like this:
+    <pre>
+      inc     di              ; Advance di by 1 to point directly to the first Attribute byte
+    color_change_loop:
+      call    wait_H_Retrace_IRQ0_timer_int_Off
+      mov     es:[di], bl   ; Overwrite just the Attribute byte
+      add     di, 2
+      loop    color_change_loop
+    </pre>
+    </details>  
 - Setup/System Configuration/Time&Date: Navigating horizontally requies pressing Up/Down while Left/Right changes settings. Can also press Enter to open special sub window for Time/Date that requires entering Hyphens and Colons! Why make user enter punctuation?!?
 - Setup/System Configuration/Disk: Doesnt validate Custom IDE types (48, 49), allows setting with all 0 values. All 0 setting freezes bootup/Setup Preformat for 20-30 seconds.
 - Setup/System Configuration/Disk: Doesnt support Auto configuration thru [IDE IDENTIFY DRIVE Command (0xEC)](https://www.os2museum.com/wp/identify-ancient-drive/).
