@@ -166,7 +166,7 @@ struct port_init
 
 /* 4 */
 #pragma pack(push, 1)
-struct __attribute__((packed)) __attribute__((aligned(1))) cmd_lookup
+struct __unaligned __declspec(align(1)) cmd_lookup
 {
   unsigned __int8 key __char;
   void *address __offset(OFF16|AUTO);
@@ -178,7 +178,7 @@ struct __attribute__((packed)) __attribute__((aligned(1))) cmd_lookup
 struct OpcodeDescriptor
 {
   void *mnemonic_token __offset(OFF16|AUTO);
-  unsigned int operand_flags;
+  unsigned __int16 operand_flags;
 };
 #pragma pack(pop)
 
@@ -186,7 +186,7 @@ struct OpcodeDescriptor
 #pragma pack(push, 1)
 struct reg_table
 {
-  unsigned int len __udec;
+  unsigned __int16 len __udec;
   port_init port_value[];
 };
 #pragma pack(pop)
@@ -204,16 +204,16 @@ struct data_pair
 #pragma pack(push, 1)
 struct data_table
 {
-  unsigned int len;
+  unsigned __int16 len;
   data_pair offset_data[];
 };
 #pragma pack(pop)
 
 /* 9 */
 #pragma pack(push, 1)
-struct __attribute__((packed)) __attribute__((aligned(1))) some_table1
+struct __unaligned __declspec(align(1)) some_table1
 {
-  unsigned int check;
+  unsigned __int16 check;
   unsigned __int8 data0;
   unsigned __int8 data1;
   unsigned __int8 data2;
@@ -244,7 +244,7 @@ enum __bitmask __bin __lzero IO_Port_201h_Gameport : unsigned __int8
 struct joy_lookup
 {
   IO_Port_201h_Gameport mask;
-  unsigned int disable_timeout_zeroing;
+  unsigned __int16 disable_timeout_zeroing;
   unsigned __int8 end_marker;
 };
 #pragma pack(pop)
@@ -302,8 +302,8 @@ struct compare_pair
 #pragma pack(push, 1)
 struct GDT_descriptor
 {
-  unsigned int limit_low;
-  unsigned int base_low;
+  unsigned __int16 limit_low;
+  unsigned __int16 base_low;
   unsigned __int8 base_mid;
   unsigned __int8 access;
   unsigned __int8 flags_limit;
@@ -313,9 +313,9 @@ struct GDT_descriptor
 
 /* 15 */
 #pragma pack(push, 1)
-struct __attribute__((packed)) __attribute__((aligned(2))) SystemTablePointer
+struct __unaligned __declspec(align(2)) SystemTablePointer
 {
-  unsigned int gdt_limit;
+  unsigned __int16 gdt_limit;
   unsigned int gdt_base __offset(OFF32|RVAOFF);
 };
 #pragma pack(pop)
@@ -334,7 +334,7 @@ struct disk_error
 struct struct_F0801
 {
   unsigned __int8 mask __bin __lzero;
-  unsigned int length;
+  unsigned __int16 length;
   int pointer;
   int pointer2;
 };
@@ -364,16 +364,16 @@ struct Video_timing_table
 #pragma pack(push, 1)
 struct FDPT
 {
-  unsigned int Cylinders __udec;
+  unsigned __int16 Cylinders __udec;
   unsigned __int8 Heads __udec;
-  unsigned int reducedWriteCyl __udec;
-  unsigned int PrecompCyl __udec;
+  unsigned __int16 reducedWriteCyl __udec;
+  unsigned __int16 PrecompCyl __udec;
   unsigned __int8 ECC;
   unsigned __int8 Control;
   unsigned __int8 bTimeOutStd __udec;
   unsigned __int8 bTimeOutFmt __udec;
   unsigned __int8 bTimeOutChk __udec;
-  unsigned int landinghZoneCyl __udec;
+  unsigned __int16 landinghZoneCyl __udec;
   unsigned __int8 SectorsPerTrack __udec;
   _BYTE unknown;
 };
@@ -483,9 +483,9 @@ enum __bitmask __bin __lzero int15h_C0h_Features : unsigned __int8
 
 /* 26 */
 #pragma pack(push, 1)
-struct __attribute__((packed)) __attribute__((aligned(2))) system_descriptor_table
+struct __unaligned __declspec(align(2)) system_descriptor_table
 {
-  unsigned int len;
+  unsigned __int16 len;
   unsigned __int8 model_number;
   unsigned __int8 Sub_model_number;
   unsigned __int8 BIOS_revision_level;
@@ -556,9 +556,6 @@ enum __bitmask __bin __lzero BDA_90h_drive0_media_state_RATE : unsigned __int8
   FLOPPY_RATE_250KBPS = 0b10000000,
 };
 
-/* 31 */
-typedef BDA_90h_drive0_media_state_RATE BDA_drive_media_state_RATE;
-
 /* 32 */
 struct DPTe
 {
@@ -610,6 +607,8 @@ enum IVT_Vectors : unsigned __int16
   IVT_KEYBOARD = 0x9,
   IVT_FDC = 0xE,
   IVT_VIDEO = 0x10,
+  IVT_VIDEO_off = 0x40,
+  IVT_VIDEO_seg = 0x42,
   IVT_EQUIPMENT_CHECK = 0x11,
   IVT_MEMORY_SIZE = 0x12,
   IVT_DISK_IO = 0x13,
@@ -624,11 +623,14 @@ enum IVT_Vectors : unsigned __int16
   IVT_TIME = 0x1A,
   IVT_CTRL_BREAK = 0x1B,
   IVT_TIMER_TICK = 0x1C,
+  IVT_TIMER_TICK_off = 0x70,
+  IVT_TIMER_TICK_seg = 0x72,
   IVT_Video_Initialization_Table = 0x1D,
   IVT_Video_Initialization_Table_off = 0x74,
   IVT_Diskette_Parameter_Table = 0x1E,
   IVT_Diskette_Parameter_Table_off = 0x78,
   IVT_VIDEO_CHARS_TABLE = 0x1F,
+  IVT_VIDEO_CHARS_TABLE_off = 0x7C,
   IVT_HDD = 0x40,
   IVT_HDD_off = 0x100,
   IVT_HDD_seg = 0x102,
@@ -696,7 +698,8 @@ enum BDA_indexes : unsigned __int8
   BDA_5Ah_cursor_pos_page5 = 0x5A,
   BDA_5Ch_cursor_pos_page6 = 0x5C,
   BDA_5Eh_cursor_pos_page7 = 0x5E,
-  BDA_60h_cursor_mode = 0x60,
+  BDA_60h_cursor_ending_scanline = 0x60,
+  BDA_61h_cursor_starting_scanline = 0x61,
   BDA_62h_video_active_page = 0x62,
   BDA_63h_CRTC_6845_base_address = 0x63,
   BDA_65h_CRTC_Mode_Control = 0x65,
@@ -751,18 +754,8 @@ enum BDA_indexes : unsigned __int8
   BDA_A8h_video_param_ctrl_block_Offset = 0xA8,
   BDA_AAh_video_param_ctrl_block_Segment = 0xAA,
   BDA_BFh_custom_semaphore = 0xBF,
+  BDA_Offset = 0x40,
 };
-
-/* 171 */
-enum __bitmask __bin __lzero BDA_90h_drive0_media_state_flags : unsigned __int8
-{
-  BDA_90h_drive_media_state_BIT3_RESERVED = 0b00001000,
-  BDA_90h_drive_media_state_ESTABLISHED = 0b00010000,
-  BDA_90h_drive_media_state_DOUBLE_STEP = 0b00100000,
-};
-
-/* 36 */
-typedef BDA_90h_drive0_media_state_flags BDA_drive_media_state_flags;
 
 /* 37 */
 enum __bitmask __bin __lzero BDA_8Bh_floppy_cfg_data : unsigned __int8
@@ -851,7 +844,7 @@ enum int13h_services : unsigned __int16
   int13h_13_Drive_diagnostic = 0x13,
   int13h_14_Controller_internal_diagnostic = 0x14,
   int13h_1400_Controller_internal_diagnostic = 0x1400,
-  int13h_15_Read_disk_type = 0x15,
+  int13h_15_Read_DASD_type = 0x15,
   int13h_16_Disk_change_line_status = 0x16,
   int13h_17_Set_dasd_type_for_format = 0x17,
   int13h_18_Set_media_type_for_format = 0x18,
@@ -870,20 +863,20 @@ enum int13h_services : unsigned __int16
 /* 42 */
 enum __bitmask __bin __lzero BDA_90h_drive0_media_state : unsigned __int8
 {
-  FLOPPY_STATE_MASK = 0x07,             ///< MASK 0 = TRY_360K_IN_360K
-  FLOPPY_STATE_TRY_360K_IN_1_2MB = 0b00000001,
-  FLOPPY_STATE_TRY_1_2MB_IN_1_2MB = 0b00000010,
-  FLOPPY_STATE_EST_360K_IN_360K = 0b00000011,
-  FLOPPY_STATE_EST_360K_IN_1_2MB = 0b00000100,
-  FLOPPY_STATE_EST_1_2MB_IN_1_2MB = 0b00000101,
-  FLOPPY_STATE_RESERVED = 0b00000110,
-  FLOPPY_STATE_OTHER_FORMATS = 0b00000111,
-  FLOPPY_STATE_BIT3_RESERVED = 0b00001000,
-  FLOPPY_STATE_known_media = 0b00010000,
-  FLOPPY_STATE_double_stepping = 0b00100000,
-  FLOPPY_STATE_RATE_MASK = 0xC0,        ///< MASK 0 = 500KBPS
-  FLOPPY_STATE_RATE_300KBPS = 0b01000000,
-  FLOPPY_STATE_RATE_250KBPS = 0b10000000,
+  BDA_90h_drive_STATE_MASK = 0x07,      ///< MASK 0 = TRY_360K_IN_360K
+  BDA_90h_drive_STATE_TRY_360K_IN_1_2MB = 0b00000001,
+  BDA_90h_drive_STATE_TRY_1_2MB_IN_1_2MB = 0b00000010,
+  BDA_90h_drive_STATE_EST_360K_IN_360K = 0b00000011,
+  BDA_90h_drive_STATE_EST_360K_IN_1_2MB = 0b00000100,
+  BDA_90h_drive_STATE_EST_1_2MB_IN_1_2MB = 0b00000101,
+  BDA_90h_drive_STATE_RESERVED = 0b00000110,
+  BDA_90h_drive_STATE_OTHER_FORMATS = 0b00000111,
+  BDA_90h_drive_STATE_BIT3_RESERVED = 0b00001000,
+  BDA_90h_drive_STATE_media_ESTABLISHED = 0b00010000,
+  BDA_90h_drive_STATE_double_stepping = 0b00100000,
+  BDA_90h_drive_STATE_RATE_MASK = 0xC0, ///< MASK 0 = 500KBPS
+  BDA_90h_drive_STATE_RATE_300KBPS = 0b01000000,
+  BDA_90h_drive_STATE_RATE_250KBPS = 0b10000000,
 };
 
 /* 43 */
@@ -1050,7 +1043,7 @@ enum BDA_74h_HDD_last_op_status : unsigned __int8
   BDA_74h_status_4_SECTOR_NOT_FND = 0x4,
   BDA_74h_status_5_RESET_FAILED = 0x5,
   BDA_74h_status_6_Disk_changed_removed = 0x6,
-  BDA_74h_status_7_Paameter_Table_ERR = 0x7,
+  BDA_74h_status_7_Parameter_Table_ERR = 0x7,
   BDA_74h_status_8_DMA_OVERRUN = 0x8,
   BDA_74h_status_9_DMA_64K_Boundary_ERR = 0x9,
   BDA_74h_status_A_BAD_SECTOR_FLAG = 0xA,
@@ -1083,10 +1076,10 @@ enum BDA_75h_HDD_count : unsigned __int8
 struct text_mode_params
 {
   unsigned __int8 num_pages;
-  unsigned int page_size;
-  unsigned int columns __udec;
-  unsigned int crtc_port;
-  unsigned int mode_reg;
+  unsigned __int16 page_size;
+  unsigned __int16 columns __udec;
+  unsigned __int16 crtc_port;
+  unsigned __int16 mode_reg;
   unsigned __int8 palette;
 };
 
@@ -1129,12 +1122,16 @@ enum int10h_services : unsigned __int8
   int10h_7_Scroll_active_page_down = 0x7,
   int10h_8_Read_character_and_attribute_at_cursor = 0x8,
   int10h_9_Write_character_and_attribute_at_cursor = 0x9,
+  int10h_0920_Write_SPACE_and_attribute_at_cursor = 0x20,
   int10h_A_Write_character_at_current_cursor = 0xA,
   int10h_B_Set_color_palette = 0xB,
   int10h_C_Write_graphics_pixel_at_coordinate = 0xC,
   int10h_D_Read_graphics_pixel_at_coordinate = 0xD,
   int10h_E_Write_text_in_teletype_mode = 0xE,
+  int10h_0E07_Ring_BELL_teletype = 0x7,
   int10h_0E0A_Write_LineFeed_in_teletype_mode = 0xA,
+  int10h_0E0D_Write_Carriage_Return_in_teletype_mode = 0xD,
+  int10h_0E78_Write_x_in_teletype_mode = 0x78,
   int10h_F_Get_current_video_state = 0xF,
   int10h_10_Set_palette_registers = 0x10,
   int10h_11_Character_generator_routine = 0x11,
@@ -1180,7 +1177,7 @@ enum __bitmask IO_Port_70h_CMOS_Index : unsigned __int8
   CMOS_10h_Floppy_Drive_Type = 0x10,
   CMOS_11h_Reserved = 0x11,
   CMOS_12h_HDD_Type = 0x12,
-  CMOS_13h_Reserved = 0x13,
+  CMOS_13h_DTK_BOOT_flags = 0x13,
   CMOS_14h_Equipment_Byte = 0x14,
   CMOS_15h_Base_Memory_Low = 0x15,
   CMOS_16h_Base_Memory_High = 0x16,
@@ -1190,22 +1187,22 @@ enum __bitmask IO_Port_70h_CMOS_Index : unsigned __int8
   CMOS_18h_Expansion_Memory_High = 0x18,
   CMOS_19h_HDD_0_Extended = 0x19,
   CMOS_1Ah_HDD_1_Extended = 0x1A,
-  CMOS_1Ch_Award_checksum = 0x1C,
-  CMOS_1Dh_Zenith_Turbo = 0x1D,
-  CMOS_1Eh_Zenith_COM_LPT = 0x1E,
-  CMOS_1Fh_Zenith_ram_base_ext = 0x1F,
-  CMOS_20h_Zenith_ram_total_MB = 0x20,
-  CMOS_21h_Zenith_Cache = 0x21,
-  CMOS_22h_Zenith_custom_something = 0x22,
-  CMOS_23h_Zenith_custom_something = 0x23,
-  CMOS_24h_Zenith_custom_something = 0x24,
-  CMOS_25h_Zenith_custom_something = 0x25,
-  CMOS_26h_Zenith_custom_something = 0x26,
-  CMOS_27h_Zenith_custom_something = 0x27,
-  CMOS_28h_Zenith_custom_something = 0x28,
-  CMOS_29h_Zenith_custom_something = 0x29,
-  CMOS_2Ah_Zenith_custom_something = 0x2A,
-  CMOS_2Bh_Zenith_custom_something = 0x2B,
+  CMOS_1Ch_DTK_HDD_Type48_Cyl_low = 0x1C,
+  CMOS_1Dh_DTK_HDD_Type48_Cyl_high = 0x1D,
+  CMOS_1Eh_DTK_HDD_Type48_Heads = 0x1E,
+  CMOS_1Fh_DTK_HDD_Type48_PreComp_Low = 0x1F,
+  CMOS_20h_DTK_HDD_Type48_PreComp_High = 0x20,
+  CMOS_21h_DTK_HDD_Type48_Land_Low = 0x21,
+  CMOS_22h_DTK_HDD_Type48_Land_High = 0x22,
+  CMOS_23h_DTK_HDD_Type48_Sectors = 0x23,
+  CMOS_24h_DTK_HDD_Type49_Cyl_low = 0x24,
+  CMOS_25h_DTK_HDD_Type49_Cyl_high = 0x25,
+  CMOS_26h_DTK_HDD_Type49_Heads = 0x26,
+  CMOS_27h_DTK_HDD_Type49_PreComp_Low = 0x27,
+  CMOS_28h_DTK_HDD_Type49_PreComp_High = 0x28,
+  CMOS_29h_DTK_HDD_Type49_Land_Low = 0x29,
+  CMOS_2Ah_DTK_HDD_Type49_Land_High = 0x2A,
+  CMOS_2Bh_DTK_HDD_Type49_Sectors = 0x2B,
   CMOS_2Ch_Zenith_custom_something = 0x2C,
   CMOS_2Dh_Zenith_custom_something = 0x2D,
   CMOS_2Eh_Checksum_High = 0x2E,
@@ -1218,7 +1215,7 @@ enum __bitmask IO_Port_70h_CMOS_Index : unsigned __int8
   CMOS_34h = 0x34,
   CMOS_35h_Zenith_Password_enabled = 0x35,
   CMOS_35h = 0x35,
-  CMOS_36h = 0x36,
+  CMOS_36h_ram_Relocate = 0x36,
   CMOS_37h = 0x37,
   CMOS_38h = 0x38,
   CMOS_39h = 0x39,
@@ -1257,11 +1254,12 @@ enum __bitmask __bin __lzero CMOS_14h_Equipment_Byte : unsigned __int8
   CMOS_14h_Equip_DISPLAY_TYPE_MASK = 0x30, ///< MASK 00 = VGA, 11 = MDA
   CMOS_14h_Equip_DISPLAY_40x25 = 0b00010000,
   CMOS_14h_Equip_DISPLAY_80x25 = 0b00100000,
-  CMOS_14h_Equip_FLOPPY_COUNT_MASK = 0b11000000, ///< MASK
+  CMOS_14h_Equip_FLOPPY_COUNT_MASK = 0xC0, ///< MASK
+  CMOS_14h_Equip_FLOPPY_COUNT_2 = 0b01000000,
 };
 
 /* 161 */
-enum IO_Port_72h_FE3001_Command_Index : unsigned __int8
+enum IO_Port_72h_FE3031_Command_Index : unsigned __int8
 {
   FE3031_0_BALE_delay = 0x0,
   FE3031_1_BALE_width = 0x4,
@@ -1277,11 +1275,8 @@ enum IO_Port_72h_FE3001_Command_Index : unsigned __int8
   FE3031_12_onboard_IO_delay = 0xC0,
 };
 
-/* 62 */
-typedef IO_Port_72h_FE3001_Command_Index FE3031_reg_index;
-
 /* 162 */
-enum IO_Port_73h_FE3001_Command_Data : unsigned __int8
+enum IO_Port_73h_FE3031_Command_Data : unsigned __int8
 {
   FE3031_DATA_0h = 0x0,
   FE3031_DATA_1h = 0x4,
@@ -1301,15 +1296,12 @@ enum IO_Port_73h_FE3001_Command_Data : unsigned __int8
   FE3031_DATA_Fh = 0xCC,
 };
 
-/* 63 */
-typedef IO_Port_73h_FE3001_Command_Data FE3031_data_value;
-
 /* 64 */
 #pragma pack(push, 1)
 struct FE3031_reg_pair
 {
-  FE3031_reg_index index;
-  FE3031_data_value data;
+  IO_Port_72h_FE3031_Command_Index index;
+  IO_Port_73h_FE3031_Command_Data data;
 };
 #pragma pack(pop)
 
@@ -1317,7 +1309,7 @@ struct FE3031_reg_pair
 #pragma pack(push, 1)
 struct FE3031_init
 {
-  int len;
+  unsigned __int16 len;
   FE3031_reg_pair byte[];
 };
 #pragma pack(pop)
@@ -1343,11 +1335,11 @@ enum __lzero CMOS_0Fh_Shutdown_Status : unsigned __int8
 /* 67 */
 struct IDT_Gate
 {
-  unsigned int offset_low __offset(OFF16|AUTO);
-  unsigned int selector;
+  unsigned __int16 offset_low __offset(OFF16|AUTO);
+  unsigned __int16 selector;
   unsigned __int8 zero;
   unsigned __int8 access;
-  unsigned int offset_high;
+  unsigned __int16 offset_high;
 };
 
 /* 68 */
@@ -1417,12 +1409,12 @@ struct ZBIOS_Record
   unsigned __int8 Down_target_idx __udec;
   unsigned __int8 Right_target_idx __udec;
   unsigned __int8 Left_target_idx __udec;
-  unsigned int Default_value __udec;
+  unsigned __int16 Default_value __udec;
   unsigned __int8 Label_idx __udec;
   unsigned __int8 Input_msg_idx __udec;
   unsigned __int8 Options_count __udec;
   unsigned __int8 unknown_byte;
-  unsigned int Handler_ptr __offset(OFF16|AUTO);
+  unsigned __int16 Handler_ptr __offset(OFF16|AUTO);
 };
 #pragma pack(pop)
 
@@ -1581,13 +1573,13 @@ enum __bitmask __bin __lzero BDA_7Bh_parallel_port4_timeout_vds : unsigned __int
 /* 87 */
 enum __bitmask __bin __lzero BDA_92h_drive0_starting_state : unsigned __int8
 {
-  FLOPPY_Start_State_DRIVE_CHANGE_line_detection = 0b00000001,
-  FLOPPY_Start_State_DRIVE_MULTIRATE = 0b00000010,
-  FLOPPY_Start_State_DRIVE_DETERMINED = 0b00000100,
-  FLOPPY_Start_State_DRIVE_RATE_MASK = 0xC0, ///< MASK 11 1MBPS
-  FLOPPY_Start_State_DRIVE_RATE_500KBPS = 0b00000000,
-  FLOPPY_Start_State_DRIVE_RATE_300KBPS = 0b01000000,
-  FLOPPY_Start_State_DRIVE_RATE_250KBPS = 0b10000000,
+  BDA_92h_DRIVE_CHANGE_line_detection = 0b00000001,
+  BDA_92h_DRIVE_MULTIRATE = 0b00000010,
+  BDA_92h_DRIVE_DETERMINED = 0b00000100,
+  BDA_92h_DRIVE_RATE_MASK = 0xC0,       ///< MASK 11 1MBPS
+  BDA_92h_DRIVE_RATE_500KBPS = 0b00000000,
+  BDA_92h_DRIVE_RATE_300KBPS = 0b01000000,
+  BDA_92h_DRIVE_RATE_250KBPS = 0b10000000,
 };
 
 /* 88 */
@@ -1768,22 +1760,6 @@ enum IO_Port_60h_KBD_Command_Status : unsigned __int8
   IO_Port_60h_KBD_Zenith_Pass_Stat_24_Version_supports_Pass = 0x24,
 };
 
-/* 176 */
-enum __bitmask __bin __lzero BDA_17h_Keyboard_flags_1 : unsigned __int8
-{
-  BDA_17h_flags_1_Right_SHIFT_DOWN = 0b00000001,
-  BDA_17h_flags_1_Left_SHIFT_DOWN = 0b00000010,
-  BDA_17h_flags_1_Ctrl_DOWN = 0b00000100,
-  BDA_17h_flags_1_Alt_DOWN = 0b00001000,
-  BDA_17h_flags_1_ScrollLock_STATE = 0b00010000,
-  BDA_17h_flags_1_NumLock_STATE = 0b00100000,
-  BDA_17h_flags_1_CapsLock_STATE = 0b01000000,
-  BDA_17h_flags_1_Insert_STATE = 0b10000000,
-};
-
-/* 98 */
-typedef BDA_17h_Keyboard_flags_1 BDA_17h_Keyboard_shift_flags_1;
-
 /* 99 */
 enum IVT_Video_Initialization_Table : unsigned __int8
 {
@@ -1871,6 +1847,7 @@ enum ASCII : unsigned __int8
   ASCII_9 = 0x39,
   ASCII_DEL_Delete = 0x7F,
   ASCII_7Bit_MASK = 0x7F,
+  ASCII_Uppercase_MASK = 0xDF,
 };
 
 /* 102 */
@@ -1901,12 +1878,6 @@ enum IO_Port_80h_POST_Code : unsigned __int8
   POSTCODE_3A_Zenith_Ram_test_or_init = 0x3A,
   POSTCODE_3C_Zenith_Ram_presence_check = 0x3C,
   POSTCODE_3D_Zenith_DMA_PIC_init = 0x3D,
-};
-
-/* 103 */
-enum __bitmask __bin __lzero BDA_18h_Keyboard_shift_flags_2 : unsigned __int8
-{
-  BDA_18h_flags_2_Right_Alt_PRESSED = 0b00000001,
 };
 
 /* 104 */
@@ -1949,29 +1920,6 @@ enum __bitmask __bin __lzero IO_Port_3DAh_CRTC_Status : unsigned __int8
   IO_Port_3DAh_CGA_FC1_read = 0b00100000,
 };
 
-/* 109 */
-enum __lzero IO_Port_3D4h_CRTC_Index : unsigned __int8
-{
-  CRTC_Idx_HORIZ_TOTAL = 0x00,
-  CRTC_Idx_HORIZ_DISPLAYED = 0x01,
-  CRTC_Idx_HORIZ_SYNC_POS = 0x02,
-  CRTC_Idx_HORIZ_SYNC_WIDTH = 0x03,
-  CRTC_Idx_VERT_TOTAL = 0x04,
-  CRTC_Idx_VERT_TOTAL_ADJUST = 0x05,
-  CRTC_Idx_VERT_DISPLAYED = 0x06,
-  CRTC_Idx_VERT_SYNC_POS = 0x07,
-  CRTC_Idx_INTERLACE_MODE = 0x08,
-  CRTC_Idx_MAX_SCANLINE_ADDR = 0x09,
-  CRTC_Idx_CURSOR_START = 0x0A,
-  CRTC_Idx_CURSOR_END = 0x0B,
-  CRTC_Idx_START_ADDR_H = 0x0C,
-  CRTC_Idx_START_ADDR_L = 0x0D,
-  CRTC_Idx_CURSOR_ADDR_H = 0x0E,
-  CRTC_Idx_CURSOR_ADDR_L = 0x0F,
-  CRTC_Idx_LIGHT_PEN_H = 0x10,
-  CRTC_Idx_LIGHT_PEN_L = 0x11,
-};
-
 /* 165 */
 enum __lzero IO_Port_3D4h_CRTC_Index_CGA : unsigned __int8
 {
@@ -2008,6 +1956,7 @@ enum KEYBOARD_RESPONSES : unsigned __int8
   KBD_RES_FE_RESEND = 0xFE,             ///< Resend last command
   KBD_PREFIX_E0_EXTENDED = 0xE0,
   KBD_PREFIX_E1_PAUSE = 0xE1,
+  KBD_PREFIX_F0_BREAK_Set2 = 0xF0,
   KBD_ID_AB_FIRST_BYTE = 0xAB,
   KBD_ID_83_MF2_STD = 0x83,             ///< Standard MF2 Keyboard [AB 83]
   KBD_ID_85_terminal_kbd = 0x85,        ///< NCD N-97 or another weird specialized keyboard [AB 85]
@@ -2022,7 +1971,7 @@ enum __bitmask __bin __lzero IO_Port_3D9h_CGA_Color_Control : unsigned __int8
   IO_Port_3D9h_GREEN_BORDER_BG = 0b00000010,
   IO_Port_3D9h_RED_BORDER_BG = 0b00000100,
   IO_Port_3D9h_INTENSITY_ALT = 0b00001000,
-  IO_Port_3D9h_ALT_INTENSITY_CLR = 0b00010000,
+  IO_Port_3D9h_Graphic_Intensity_or_Text_BGcolor = 0b00010000,
   IO_Port_3D9h_PALETTE_SELECT = 0b00100000, ///< bit5 0 = Green/Red/Brown, 1 = Cyan/Magenta/White
 };
 
@@ -2453,8 +2402,8 @@ struct ZBIOS_RowNode
 struct ZBIOS_DrawCommand
 {
   unsigned __int8 coord_X __udec;
-  char character __strlit(C,"UTF-8");
-  unsigned int repeat_count __udec;
+  char character __strlit(C,"CP437");
+  unsigned __int16 repeat_count __udec;
 };
 #pragma pack(pop)
 
@@ -2462,9 +2411,11 @@ struct ZBIOS_DrawCommand
 enum Keyboard_scancodes : unsigned __int16
 {
   scancode_Ctrl_C = 0x3,
-  scancode_BACKSPACE = 0x8,
+  scancode_BACKSPACE = 0xE,
+  scancode_BACKSPACE_ = 0xE08,
   scancode_TAB = 0x9,
-  scancode_CR_ENTER = 0xD,
+  scancode_CR_ENTER = 0x1C,
+  scancode_CR_ENTER_ = 0x1C0D,
   scancode_Ctrl_S = 0x13,
   scancode_ESC = 0x1B,
   scancode_ESC_ = 0x11B,
@@ -2480,11 +2431,105 @@ enum Keyboard_scancodes : unsigned __int16
   scancode_DEL = 0x53,
 };
 
+/* 178 */
+enum __bitmask ScanCode_Set_1 : unsigned __int8
+{
+  scancode_key_MASK = 0x7F,             ///< MASK
+  scancode_NULL = 0x0,
+  scancode_Esc = 0x1,
+  scancode_1 = 0x2,
+  scancode_2 = 0x3,
+  scancode_3 = 0x4,
+  scancode_4 = 0x5,
+  scancode_5 = 0x6,
+  scancode_6 = 0x7,
+  scancode_7 = 0x8,
+  scancode_8 = 0x9,
+  scancode_9 = 0xA,
+  scancode_0 = 0xB,
+  scancode_Minus = 0xC,
+  scancode_Equals = 0xD,
+  scancode_BackSpace = 0xE,
+  scancode_Tab = 0xF,
+  scancode_Q = 0x10,
+  scancode_W = 0x11,
+  scancode_E = 0x12,
+  scancode_R = 0x13,
+  scancode_T = 0x14,
+  scancode_Y = 0x15,
+  scancode_U = 0x16,
+  scancode_I = 0x17,
+  scancode_O = 0x18,
+  scancode_P = 0x19,
+  scancode_A = 0x1E,
+  scancode_S = 0x1F,
+  scancode_D = 0x20,
+  scancode_F = 0x21,
+  scancode_G = 0x22,
+  scancode_H = 0x23,
+  scancode_J = 0x24,
+  scancode_K = 0x25,
+  scancode_L = 0x26,
+  scancode_Z = 0x2C,
+  scancode_X = 0x2D,
+  scancode_C = 0x2E,
+  scancode_V = 0x2F,
+  scancode_B = 0x30,
+  scancode_N = 0x31,
+  scancode_M = 0x32,
+  scancode_Opening_Bracket = 0x1A,
+  scancode_Closing_Bracket = 0x1B,
+  scancode_Enter_Keypad_Enter_E0_1C = 0x1C,
+  scancode_Semicolon = 0x27,
+  scancode_Apostrophe = 0x28,
+  scancode_Grave_accent = 0x29,
+  scancode_BackSlash = 0x2B,
+  scancode_Comma = 0x33,
+  scancode_Period = 0x34,
+  scancode_Slash = 0x35,
+  scancode_Keypad_Asterisk_PrtSc = 0x37,
+  scancode_SpaceBar = 0x39,
+  scancode_CapsLock = 0x3A,
+  scancode_Left_Control_Right_Control_E0_1D = 0x1D,
+  scancode_Left_Shift = 0x2A,
+  scancode_Right_Shift = 0x36,
+  scancode_Left_Alt = 0x38,
+  scancode_NumLock_Pause_E1_1D_45 = 0x45,
+  scancode_ScrollLock_Ctrl_Break_E0_46 = 0x46,
+  scancode_Keypad_7_Home = 0x47,
+  scancode_Keypad_8_Up_Arrow = 0x48,
+  scancode_Keypad_9_PgUp = 0x49,
+  scancode_Keypad_Minus = 0x4A,
+  scancode_Keypad_4_Left_Arrow = 0x4B,
+  scancode_Keypad_5 = 0x4C,
+  scancode_Keypad_6_Right_Arrow = 0x4D,
+  scancode_Keypad_Plus = 0x4E,
+  scancode_Keypad_1_End = 0x4F,
+  scancode_Keypad_2_Down_Arrow = 0x50,
+  scancode_Keypad_3_PgDn = 0x51,
+  scancode_Keypad_0_Insert = 0x52,
+  scancode_Keypad_period_Del_Del_E0_53 = 0x53,
+  scancode_SysReq = 0x54,
+  scancode_F1 = 0x3B,
+  scancode_F2 = 0x3C,
+  scancode_F3 = 0x3D,
+  scancode_F4 = 0x3E,
+  scancode_F5 = 0x3F,
+  scancode_F6 = 0x40,
+  scancode_F7 = 0x41,
+  scancode_F8 = 0x42,
+  scancode_F9 = 0x43,
+  scancode_F10 = 0x44,
+  scancode_F11 = 0x57,
+  scancode_F12 = 0x58,
+  scancode_Break_MASK = 0x80,           ///< MASK
+};
+
 /* 150 */
-struct scancode_char_pair
+struct ASCII_ScanCode_pair
 {
   ASCII ascii;
-  Keyboard_scancodes scancode;
+  ScanCode_Set_1 scancode;
 };
 
 /* 151 */
@@ -2601,24 +2646,6 @@ enum Zenith_Slushware_RAM : unsigned __int16
   Zenith_cs550h_A20 = 0x550,
 };
 
-/* 163 */
-#pragma pack(push, 1)
-struct FE3001_reg_pair
-{
-  IO_Port_72h_FE3001_Command_Index index;
-  IO_Port_73h_FE3001_Command_Data data;
-};
-#pragma pack(pop)
-
-/* 164 */
-#pragma pack(push, 1)
-struct FE3001_init
-{
-  unsigned int len;
-  FE3001_reg_pair byte[];
-};
-#pragma pack(pop)
-
 /* 166 */
 enum __bitmask __bin __lzero IO_Port_3D4h_CRTC_Idx_5_Horiz_Retrace_End : unsigned __int8
 {
@@ -2675,8 +2702,10 @@ enum __bitmask __bin __lzero Zenith_cs4EEh_HDD_flags : unsigned __int8
 enum boolean_variable : unsigned __int16
 {
   False_bool = 0x0,
-  True_bool_ = 0xFF,
-  True_bool = 0xFFFF,
+  True_bool = 0x1,
+  True_bool_ = 0x2,
+  True_bool__ = 0xFF,
+  True_bool___ = 0xFFFF,
 };
 
 /* 173 */
@@ -2709,6 +2738,19 @@ enum Zenith_cs4CAh_MFM_Tempest_bios_present : unsigned __int8
   MFM_Tempest_bios_present = 0xFF,
 };
 
+/* 176 */
+enum __bitmask __bin __lzero BDA_17h_Keyboard_flags_1 : unsigned __int8
+{
+  BDA_17h_flags_1_Right_SHIFT_DOWN = 0b00000001,
+  BDA_17h_flags_1_Left_SHIFT_DOWN = 0b00000010,
+  BDA_17h_flags_1_Ctrl_DOWN = 0b00000100,
+  BDA_17h_flags_1_Alt_DOWN = 0b00001000,
+  BDA_17h_flags_1_ScrollLock_STATE = 0b00010000,
+  BDA_17h_flags_1_NumLock_STATE = 0b00100000,
+  BDA_17h_flags_1_CapsLock_STATE = 0b01000000,
+  BDA_17h_flags_1_Insert_STATE = 0b10000000,
+};
+
 /* 177 */
 enum __bitmask __bin __lzero BDA_18h_Keyboard_flags_2 : unsigned __int8
 {
@@ -2720,102 +2762,6 @@ enum __bitmask __bin __lzero BDA_18h_Keyboard_flags_2 : unsigned __int8
   BDA_18h_flags_2_NumLock_PRESSED = 0b00100000,
   BDA_18h_flags_2_CapsLock_PRESSED = 0b01000000,
   BDA_18h_flags_2_Insert_PRESSED = 0b10000000,
-};
-
-/* 178 */
-enum ScanCode_Set_1 : unsigned __int8
-{
-  scancode_NULL = 0x0,
-  scancode_Esc = 0x1,
-  scancode_1 = 0x2,
-  scancode_2 = 0x3,
-  scancode_3 = 0x4,
-  scancode_4 = 0x5,
-  scancode_5 = 0x6,
-  scancode_6 = 0x7,
-  scancode_7 = 0x8,
-  scancode_8 = 0x9,
-  scancode_9 = 0xA,
-  scancode_0 = 0xB,
-  scancode_Minus = 0xC,
-  scancode_Equals = 0xD,
-  scancode_BackSpace = 0xE,
-  scancode_Tab = 0xF,
-  scancode_Q = 0x10,
-  scancode_W = 0x11,
-  scancode_E = 0x12,
-  scancode_R = 0x13,
-  scancode_T = 0x14,
-  scancode_Y = 0x15,
-  scancode_U = 0x16,
-  scancode_I = 0x17,
-  scancode_O = 0x18,
-  scancode_P = 0x19,
-  scancode_A = 0x1E,
-  scancode_S = 0x1F,
-  scancode_D = 0x20,
-  scancode_F = 0x21,
-  scancode_G = 0x22,
-  scancode_H = 0x23,
-  scancode_J = 0x24,
-  scancode_K = 0x25,
-  scancode_L = 0x26,
-  scancode_Z = 0x2C,
-  scancode_X = 0x2D,
-  scancode_C = 0x2E,
-  scancode_V = 0x2F,
-  scancode_B = 0x30,
-  scancode_N = 0x31,
-  scancode_M = 0x32,
-  scancode_Opening_Bracket = 0x1A,
-  scancode_Closing_Bracket = 0x1B,
-  scancode_Enter = 0x1C,
-  scancode_Semicolon = 0x27,
-  scancode_Apostrophe = 0x28,
-  scancode_Grave_accent = 0x29,
-  scancode_BackSlash = 0x2B,
-  scancode_Comma = 0x33,
-  scancode_Period = 0x34,
-  scancode_Slash = 0x35,
-  scancode_Keypad_Asterisk = 0x37,
-  scancode_SpaceBar = 0x39,
-  scancode_CapsLock = 0x3A,
-  scancode_Left_Control = 0x1D,
-  scancode_Left_Shift = 0x2A,
-  scancode_Right_Shift = 0x36,
-  scancode_Left_Alt = 0x38,
-  scancode_NumLock = 0x45,
-  scancode_ScrollLock = 0x46,
-  scancode_Home = 0x47,
-  scancode_Up_Arrow = 0x48,
-  scancode_Left_Arrow = 0x4B,
-  scancode_Right_Arrow = 0x4D,
-  scancode_Down_Arrow = 0x50,
-  scancode_Keypad_0_Insert = 0x52,
-  scancode_Del = 0x53,
-  scancode_F1 = 0x3B,
-  scancode_F2 = 0x3C,
-  scancode_F3 = 0x3D,
-  scancode_F4 = 0x3E,
-  scancode_F5 = 0x3F,
-  scancode_F6 = 0x40,
-  scancode_F7 = 0x41,
-  scancode_F8 = 0x42,
-  scancode_F9 = 0x43,
-  scancode_F10 = 0x44,
-  scancode_F11 = 0x57,
-  scancode_F12 = 0x58,
-  scancode_Break_MASK = 0x80,           ///< MASK for key Make/Break
-  scancode_Right_Alt_Break_E0_B8 = 0xB8,
-  scancode_PrtSc_E0_37 = 0x37,
-  scancode_Pause_E1_1D_45 = 0x45,
-};
-
-/* 179 */
-struct ASCII_ScanCode_pair
-{
-  ASCII ascii;
-  ScanCode_Set_1 scancode;
 };
 
 /* 180 */
@@ -2959,6 +2905,7 @@ enum int16_scancodes : unsigned __int16
   int16_scancode_Comma = 0x332C,
   int16_scancode_Period = 0x342E,
   int16_scancode_Slash = 0x352F,
+  int16_scancode_Slash_Ctrl = 0x9500,
   int16_scancode_Keypad_Asterisk = 0x372A,
   int16_scancode_SpaceBar = 0x3920,
   int16_scancode_F1 = 0x3B00,
@@ -2986,6 +2933,7 @@ enum int16_scancodes : unsigned __int16
   int16_scancode_Down_Arrow = 0x5000,
   int16_scancode_PgUp = 0x4900,
   int16_scancode_PgDn = 0x5100,
+  int16_scancode_PrtSc = 0x7200,
 };
 
 /* 189 */
@@ -3006,5 +2954,231 @@ struct regs16
   unsigned __int8 al;
   unsigned __int8 ah;
   unsigned __int16 es;
+};
+
+/* 191 */
+enum __bitmask __lzero Row_Column : unsigned __int16
+{
+  Row_MASK = 0xFF00,                    ///< MASK
+  Row__0 = 0x0000,
+  Row__1 = 0x0100,
+  Row__2 = 0x0200,
+  Row__3 = 0x0300,
+  Row__4 = 0x0400,
+  Row__5 = 0x0500,
+  Row__6 = 0x0600,
+  Row__7 = 0x0700,
+  Row__8 = 0x0800,
+  Row__9 = 0x0900,
+  Row_10 = 0x0A00,
+  Row_11 = 0x0B00,
+  Row_12 = 0x0C00,
+  Row_13 = 0x0D00,
+  Row_14 = 0x0E00,
+  Row_15 = 0x0F00,
+  Row_16 = 0x1000,
+  Row_17 = 0x1100,
+  Row_18 = 0x1200,
+  Row_19 = 0x1300,
+  Row_20 = 0x1400,
+  Row_21 = 0x1500,
+  Row_22 = 0x1600,
+  Row_23 = 0x1700,
+  Row_24 = 0x1800,
+  Column_MASK = 0x00FF,                 ///< MASK
+  Column__0 = 0x0000,
+  Column__1 = 0x0001,
+  Column__2 = 0x0002,
+  Column__3 = 0x0003,
+  Column__4 = 0x0004,
+  Column__5 = 0x0005,
+  Column__6 = 0x0006,
+  Column__7 = 0x0007,
+  Column__8 = 0x0008,
+  Column__9 = 0x0009,
+  Column_10 = 0x000A,
+  Column_11 = 0x000B,
+  Column_12 = 0x000C,
+  Column_13 = 0x000D,
+  Column_14 = 0x000E,
+  Column_15 = 0x000F,
+  Column_16 = 0x0010,
+  Column_17 = 0x0011,
+  Column_18 = 0x0012,
+  Column_19 = 0x0013,
+  Column_20 = 0x0014,
+  Column_21 = 0x0015,
+  Column_22 = 0x0016,
+  Column_23 = 0x0017,
+  Column_24 = 0x0018,
+  Column_25 = 0x0019,
+  Column_26 = 0x001A,
+  Column_27 = 0x001B,
+  Column_28 = 0x001C,
+  Column_29 = 0x001D,
+  Column_30 = 0x001E,
+  Column_31 = 0x001F,
+  Column_32 = 0x0020,
+  Column_33 = 0x0021,
+  Column_34 = 0x0022,
+  Column_35 = 0x0023,
+  Column_36 = 0x0024,
+  Column_37 = 0x0025,
+  Column_38 = 0x0026,
+  Column_39 = 0x0027,
+  Column_40 = 0x0028,
+  Column_41 = 0x0029,
+  Column_42 = 0x002A,
+  Column_43 = 0x002B,
+  Column_44 = 0x002C,
+  Column_45 = 0x002D,
+  Column_46 = 0x002E,
+  Column_47 = 0x002F,
+  Column_48 = 0x0030,
+  Column_49 = 0x0031,
+  Column_50 = 0x0032,
+  Column_51 = 0x0033,
+  Column_52 = 0x0034,
+  Column_53 = 0x0035,
+  Column_54 = 0x0036,
+  Column_55 = 0x0037,
+  Column_56 = 0x0038,
+  Column_57 = 0x0039,
+  Column_58 = 0x003A,
+  Column_59 = 0x003B,
+  Column_60 = 0x003C,
+  Column_61 = 0x003D,
+  Column_62 = 0x003E,
+  Column_63 = 0x003F,
+  Column_64 = 0x0040,
+  Column_65 = 0x0041,
+  Column_66 = 0x0042,
+  Column_67 = 0x0043,
+  Column_68 = 0x0044,
+  Column_69 = 0x0045,
+  Column_70 = 0x0046,
+  Column_71 = 0x0047,
+  Column_72 = 0x0048,
+  Column_73 = 0x0049,
+  Column_74 = 0x004A,
+  Column_75 = 0x004B,
+  Column_76 = 0x004C,
+  Column_77 = 0x004D,
+  Column_78 = 0x004E,
+  Column_79 = 0x004F,
+};
+
+/* 192 */
+enum __bitmask __bin __lzero Text_Colors : unsigned __int8
+{
+  Col_Bg_MASK = 0xF0,                   ///< MASK
+  Col_Bg_Black = 0b00000000,
+  Col_Bg_Blue = 0b00010000,
+  Col_Bg_Green = 0b00100000,
+  Col_Bg_Cyan = 0b00110000,
+  Col_Bg_Red = 0b01000000,
+  Col_Bg_Magenta = 0b01010000,
+  Col_Bg_Brown = 0b01100000,
+  Col_Bg_Light_Gray = 0b01110000,
+  Col_Bg_Dark_Gray = 0b10000000,
+  Col_Bg_Light_Blue = 0b10010000,
+  Col_Bg_Light_Green = 0b10100000,
+  Col_Bg_Light_Cyan = 0b10110000,
+  Col_Bg_Light_Red = 0b11000000,
+  Col_Bg_Light_Magenta = 0b11010000,
+  Col_Bg_Yellow = 0b11100000,
+  Col_Bg_White = 0b11110000,
+  Col_Fg_MASK = 0x0F,                   ///< MASK
+  Col_Fg_Black = 0b00000000,
+  Col_Fg_Blue = 0b00000001,
+  Col_Fg_Green = 0b00000010,
+  Col_Fg_Cyan = 0b00000011,
+  Col_Fg_Red = 0b00000100,
+  Col_Fg_Magenta = 0b00000101,
+  Col_Fg_Brown = 0b00000110,
+  Col_Fg_Light_Gray = 0b00000111,
+  Col_Fg_Dark_Gray = 0b00001000,
+  Col_Fg_Light_Blue = 0b00001001,
+  Col_Fg_Light_Green = 0b00001010,
+  Col_Fg_Light_Cyan = 0b00001011,
+  Col_Fg_Light_Red = 0b00001100,
+  Col_Fg_Light_Magenta = 0b00001101,
+  Col_Fg_Yellow = 0b00001110,
+  Col_Fg_White = 0b00001111,
+};
+
+/* 193 */
+#pragma pack(push, 1)
+struct BIOS_DTK_cursor
+{
+  Row_Column location;
+  unsigned __int8 length;
+};
+#pragma pack(pop)
+
+/* 194 */
+enum DTK_RAM : unsigned __int16
+{
+  DTK_ds200h_selected_Option = 0x200,
+  DTK_ds20Dh_numeric_Buffer_start = 0x20D,
+  DTK_ds217h_BadTrack_list_index = 0x217,
+  DTK_ds21Eh_PREFORMAT_disk_Letter = 0x21E,
+  DTK_ds21Fh_PREFORMAT_disk_ID = 0x21F,
+  DTK_ds220h_PREFORMAT_disk_Heads = 0x220,
+  DTK_ds221h_PREFORMAT_disk_Cylinders = 0x221,
+  DTK_ds224h_Bios_text_color = 0x224,
+  DTK_ds23Eh_Base_Ram_Option = 0x23E,
+  DTK_ds23Fh_Floppy_A_Type = 0x23F,
+  DTK_ds240h_Floppy_B_Type = 0x240,
+  DTK_ds24Ch_PREFORMAT_Interleave = 0x24C,
+  DTK_ds24Dh_Keyboard_input = 0x24D,
+  DTK_ds24Fh_Base_Ram_Capacity = 0x24F,
+  DTK_ds253h_Bios_cursor_color = 0x253,
+  DTK_ds254h_drive_C_BadTracks = 0x254,
+  DTK_ds255h_drive_D_BadTracks = 0x255,
+  DTK_ds25Dh_hidden_Cursor_location = 0x25D,
+  DTK_ds1000h_drive_C_BadTrack_list = 0x1000,
+  DTK_ds1800h_drive_D_BadTrack_list = 0x1800,
+};
+
+/* 195 */
+enum __bitmask __bin __lzero Text_Attributes : unsigned __int8
+{
+  Blink_MASK = 0x80,                    ///< MASK
+  No_Blink = 0b00000000,
+  Blink = 0b10000000,
+  Bg_MASK = 0x70,                       ///< MASK
+  Bg_Black = 0b00000000,
+  Bg_Blue = 0b00010000,
+  Bg_Green = 0b00100000,
+  Bg_Cyan = 0b00110000,
+  Bg_Red = 0b01000000,
+  Bg_Magenta = 0b01010000,
+  Bg_Brown = 0b01100000,
+  Bg_Light_Gray = 0b01110000,
+  Fg_MASK = 0x0F,                       ///< MASK
+  Fg_Black = 0b00000000,
+  Fg_Blue = 0b00000001,
+  Fg_Green = 0b00000010,
+  Fg_Cyan = 0b00000011,
+  Fg_Red = 0b00000100,
+  Fg_Magenta = 0b00000101,
+  Fg_Brown = 0b00000110,
+  Fg_Light_Gray = 0b00000111,
+  Fg_Dark_Gray = 0b00001000,
+  Fg_Light_Blue = 0b00001001,
+  Fg_Light_Green = 0b00001010,
+  Fg_Light_Cyan = 0b00001011,
+  Fg_Light_Red = 0b00001100,
+  Fg_Light_Magenta = 0b00001101,
+  Fg_Yellow = 0b00001110,
+  Fg_White = 0b00001111,
+};
+
+/* 196 */
+enum int15h_services : unsigned __int16
+{
+  int15h_8500_SysReq_Pressed = 0x8500,
+  int15h_8501_SysReq_Released = 0x8501,
 };
 
