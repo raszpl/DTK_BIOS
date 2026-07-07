@@ -84,4 +84,4 @@ Quirks:
 - Setup/Preformat: Engrish "type haven't set up" instead of "type not set up".
 
 # status
-dtk-pem-0036y ~50% dissasembled, ~20% labeled.
+dtk-pem-0036y ~100% dissasembled, ~95% labeled.
